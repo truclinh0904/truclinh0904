@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>English Practice Pro</title>
+  
+  <!-- React & ReactDOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel (để chạy JSX trực tiếp trên trình duyệt) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome Icons (Thay thế cho lucide-react trong môi trường HTML tĩnh) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const QUIZ_DATA = {
+      3: [
+        { q: "Where is he from? - He is from ________. (Unit 1)", options: ["Italy", "Alpha", "Japan", "the USA"], ans: 0, hint: "🇮🇹", level: "Medium" },
+        { q: "Who is she? - She is my ________. (Unit 2)", options: ["grandfather", "father", "brother", "grandmother"], ans: 3, hint: "👵", level: "Medium" },
+        { q: "What subject is this? It's ________. (Unit 3)", options: ["math", "art", "music", "English"], ans: 1, hint: "🎨", level: "Medium" },
+        { q: "It is time to go to sleep. ________! (Unit 2)", options: ["Clean your room", "Wake up", "Go to bed", "Do your homework"], ans: 2, hint: "🛌", level: "Medium" },
+        { q: "What is in the bedroom? - There is a ________. (Unit 4)", options: ["stove", "bed", "sofa", "bathtub"], ans: 1, hint: "🛏️", level: "Medium" },
+        { q: "What is she doing? - She is ________ the house. (Unit 4)", options: ["cleaning", "playing", "sleeping", "eating"], ans: 0, hint: "🧹", level: "Medium" },
+        { q: "Can you play ________? - Yes, I can. (Unit 5)", options: ["volleyball", "soccer", "tennis", "badminton"], ans: 2, hint: "🎾", level: "Medium" },
+        { q: "What are you wearing? - I am wearing a black ________. (Unit 6)", options: ["skirt", "shorts", "T-shirt", "dress"], ans: 2, hint: "👕", level: "Medium" },
+        { q: "Are those your ________? - Yes, they are. (Unit 6)", options: ["jacket", "boots", "belt", "sweater"], ans: 1, hint: "🥾", level: "Medium" },
+        { q: "What can you make with red and white? - I can make ________. (Unit 3)", options: ["green", "purple", "pink", "blue"], ans: 2, hint: "💗", level: "Medium" },
+        { q: "Unscramble the word: 'm - i - r - r - o - r'. What room is it usually in? (Unit 4)", options: ["In the yard", "In the bathroom", "In the kitchen", "In the tree"], ans: 1, hint: "🪞", level: "High" },
+        { q: "You have math on Mondays and Thursdays. You have art on Tuesdays and Fridays. Do you have art on Thursdays? (Unit 3)", options: ["Yes, I do.", "No, I don't.", "Yes, I am.", "No, I am not."], ans: 1, hint: "📅", level: "High" },
+        { q: "Choose the correct action: In basketball, you are good at ________ and catching. (Unit 5)", options: ["throwing", "kicking", "sleeping", "reading"], ans: 0, hint: "🏀", level: "High" },
+        { q: "She is wearing a blue skirt, a yellow shirt, and white shoes. What color is her skirt? (Unit 6)", options: ["Yellow", "White", "Blue", "Black"], ans: 2, hint: "👗", level: "High" },
+        { q: "Find the odd one out: (Unit 5)", options: ["catching", "hitting", "throwing", "tennis"], ans: 3, hint: "🤔", level: "High" },
+        { q: "I am in the living room. I am sitting on the ________. (Unit 4)", options: ["bathtub", "sink", "sofa", "mirror"], ans: 2, hint: "🛋️", level: "High" },
+        { q: "My pet is a bird. It is five years old. It is yellow and green. What animal is the pet? (Unit 2)", options: ["A dog", "A cat", "A fish", "A bird"], ans: 3, hint: "🦜", level: "High" },
+        { q: "May I go skateboarding? - ________ (Unit 5)", options: ["Yes, you may.", "Yes, I can.", "No, I don't.", "Yes, I am."], ans: 0, hint: "🛹", level: "High" },
+        { q: "Look at the spelling. Which one is correct? (Unit 1)", options: ["A-M-L-O-N", "J-O-H-N", "S-U-I-E", "M-E-I-R"], ans: 1, hint: "✏️", level: "High" },
+        { q: "Choose the correct question: 'I'm wearing blue jeans.' (Unit 6)", options: ["What do you want?", "What are you wearing?", "Are these your jeans?", "What is she wearing?"], ans: 1, hint: "👖", level: "High" }
+      ],
+      4: [
+        { q: "What animal is this? It lives in the river and has a big mouth.", options: ["Kangaroo", "Crocodile", "Parrot", "Penguin"], ans: 1, hint: "🐊", level: "Medium" },
+        { q: "Tigers eat ________ and they have stripes on their fur.", options: ["fruits", "leaves", "meat", "grass"], ans: 2, hint: "🐅", level: "Medium" },
+        { q: "What can she do? - She can play the ________.", options: ["guitar", "rope", "gymnastics", "puzzle"], ans: 0, hint: "🎸", level: "Medium" },
+        { q: "What are you doing? - I am eating ________ at the market.", options: ["martial arts", "snacks", "chess", "swimming"], ans: 1, hint: "🍿", level: "Medium" },
+        { q: "What's the weather like today? - It's ________.", options: ["cloudy", "noisy", "terrible", "delicious"], ans: 0, hint: "☁️", level: "Medium" },
+        { q: "I like doing ________ at the stadium.", options: ["reading", "a puzzle", "gymnastics", "fishing"], ans: 2, hint: "🤸", level: "Medium" },
+        { q: "Bring your ________ because it's snowy today.", options: ["coat", "sunglasses", "swimsuit", "sandals"], ans: 0, hint: "🧥", level: "Medium" },
+        { q: "Are they playing a board game? - Yes, ________.", options: ["they are", "they do", "they can", "they play"], ans: 0, hint: "🎲", level: "Medium" },
+        { q: "Can you ride a bike? - ________, I can.", options: ["Not", "Yes", "No", "Do"], ans: 1, hint: "🚲", level: "Medium" },
+        { q: "What are they doing? - They are ________ a tree.", options: ["jumping", "swimming", "climbing", "flying"], ans: 2, hint: "🧗", level: "Medium" },
+        { q: "Unscramble: bats / wings / fly / use / to / their.", options: ["Bats use their wings to fly.", "Bats fly to use their wings.", "Their wings use bats to fly.", "To fly bats use their wings."], ans: 0, hint: "🦇", level: "High" },
+        { q: "They don't have any fins but they can swim. They have strong bodies. What animal is it?", options: ["Sharks", "Dolphins", "Snakes", "Crocodiles"], ans: 2, hint: "🐍", level: "High" },
+        { q: "My mother can make pancakes, but she can't make pasta. Can her mother make pasta?", options: ["Yes, she can.", "No, she can't.", "Yes, she is.", "No, she isn't."], ans: 1, hint: "🍝", level: "High" },
+        { q: "What do you like doing when it's freezing?", options: ["making a snowman", "eating ice cream", "going swimming", "flying a kite"], ans: 0, hint: "☃️", level: "High" },
+        { q: "Choose the correct question: '________ you like to have a picnic with me?'", options: ["Do", "Are", "Can", "Would"], ans: 3, hint: "🥪", level: "High" },
+        { q: "He is wearing a yellow T-shirt and taking photos. Where is he?", options: ["He is taking photos.", "He is wearing a T-shirt.", "At the park.", "He is my best friend."], ans: 2, hint: "📷", level: "High" },
+        { q: "Read and choose True or False: 'Penguins have wings, so they can fly in the sky.'", options: ["True", "False", "Yes", "No"], ans: 1, hint: "🐧", level: "High" },
+        { q: "Which sentence is correct?", options: ["When it's playing the piano I like warm.", "I playing the piano like when it's warm.", "I like playing the piano when it's warm.", "When it's warm the piano I like playing."], ans: 2, hint: "🎹", level: "High" },
+        { q: "What does a rhino have? - It has ________ skin and a horn.", options: ["soft", "feathers", "thick", "wings"], ans: 2, hint: "🦏", level: "High" },
+        { q: "Lisa and Lucy are playing chess at home. Who is playing chess?", options: ["At home", "Lisa and Lucy", "They are", "Playing chess"], ans: 1, hint: "♟️", level: "High" }
+      ],
+      5: [
+        { q: "Which subject do you like? - I like ________ because I like learning about the past.", options: ["I.T.", "math", "history", "art"], ans: 2, hint: "📜", level: "Medium" },
+        { q: "What do people do to celebrate Halloween? - They wear ________.", options: ["costumes", "a Christmas tree", "lucky money", "the lion dance"], ans: 0, hint: "🧛", level: "Medium" },
+        { q: "Where were you yesterday? - I was at the ________. The food was delicious.", options: ["movie theater", "library", "restaurant", "stadium"], ans: 2, hint: "🍽️", level: "Medium" },
+        { q: "How did you get to the island? - We went by ________.", options: ["plane", "ferry", "helicopter", "van"], ans: 1, hint: "⛴️", level: "Medium" },
+        { q: "I feel sleepy. - You should ________.", options: ["eat candy", "skip breakfast", "get some rest", "stay up late"], ans: 2, hint: "🛌", level: "Medium" },
+        { q: "Let's make smoothies! OK. I'll bring ________.", options: ["steak", "milk", "chicken", "curry"], ans: 1, hint: "🥛", level: "Medium" },
+        { q: "0% means you ________ do it.", options: ["always", "sometimes", "rarely", "never"], ans: 3, hint: "🚫", level: "Medium" },
+        { q: "When's Teachers' Day in Vietnam? - It's on ________ twentieth.", options: ["October", "November", "December", "January"], ans: 1, hint: "🗓️", level: "Medium" },
+        { q: "Did you visit your grandparents last weekend?", options: ["No", "Do", "Yes", "Did"], ans: 2, hint: "🏡", level: "Medium" },
+        { q: "I have a ________. I should see a dentist.", options: ["headache", "toothache", "stomachache", "earache"], ans: 1, hint: "🦷", level: "Medium" },
+        { q: "I rarely do experiments in science class. What does this mean?", options: ["I do it 100%.", "I do it 5%.", "I do it 80%.", "I do it 50%."], ans: 1, hint: "🧪", level: "High" },
+        { q: "I want to be a lion, and my brother wants to be a shark. We eat lots of candy on that day. What holiday is this?", options: ["Teachers' Day", "Christmas", "Halloween", "Lunar New Year"], ans: 2, hint: "🎃", level: "High" },
+        { q: "Last weekend, we played some board games. What tense is used?", options: ["Present continuous", "Past simple", "Future simple", "Present simple"], ans: 1, hint: "🕰️", level: "High" },
+        { q: "I went to Da Nang ________ my brother ________ minibus.", options: ["with / by", "by / with", "in / by", "to / with"], ans: 0, hint: "🚐", level: "High" },
+        { q: "You have a stomachache. You shouldn't eat ________.", options: ["medicine", "vegetables", "fast food", "rest"], ans: 2, hint: "🍟", level: "High" },
+        { q: "Which sentence is grammatically correct?", options: ["I need a few butter.", "She needs a little milk.", "We need some milks.", "He needs a lot of sugars."], ans: 1, hint: "✅", level: "High" },
+        { q: "The children were noisy. Opposite of 'noisy' is ________.", options: ["quiet", "busy", "scary", "delicious"], ans: 0, hint: "🔇", level: "High" },
+        { q: "Did you go camping? - No, I didn't. I ________ karaoke.", options: ["sing", "singing", "sang", "sings"], ans: 2, hint: "🎤", level: "High" },
+        { q: "In the UK, people eat eggs, bread, and cereal for breakfast. What do they NOT eat?", options: ["Eggs", "Cereal", "Bread", "Steak"], ans: 3, hint: "🥩", level: "High" },
+        { q: "Give advice for someone who is sleepy:", options: ["You should skip breakfast.", "You shouldn't stay up late.", "You should eat too much.", "You shouldn't see a dentist."], ans: 1, hint: "💤", level: "High" }
+      ]
+    };
+
+    const App = () => {
+      const [view, setView] = useState('menu'); // menu, quiz, result
+      const [currentGrade, setCurrentGrade] = useState(null);
+      const [questions, setQuestions] = useState([]);
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [score, setScore] = useState(0);
+      const [selectedOption, setSelectedOption] = useState(null);
+      const [isAnswered, setIsAnswered] = useState(false);
+      const [showFeedback, setShowFeedback] = useState(null); // 'correct' or 'wrong'
+
+      const startQuiz = (grade) => {
+        setCurrentGrade(grade);
+        setQuestions(QUIZ_DATA[grade]);
+        setCurrentIndex(0);
+        setScore(0);
+        setView('quiz');
+        setSelectedOption(null);
+        setIsAnswered(false);
+      };
+
+      const handleAnswer = (index) => {
+        if (isAnswered) return;
+        setSelectedOption(index);
+        setIsAnswered(true);
+        const correct = index === questions[currentIndex].ans;
+        if (correct) {
+          setScore(score + 1);
+          setShowFeedback('correct');
+        } else {
+          setShowFeedback('wrong');
+        }
+      };
+
+      const nextQuestion = () => {
+        if (currentIndex < questions.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+          setSelectedOption(null);
+          setIsAnswered(false);
+          setShowFeedback(null);
+        } else {
+          setView('result');
+        }
+      };
+
+      const reset = () => {
+        setView('menu');
+        setCurrentGrade(null);
+        setQuestions([]);
+        setCurrentIndex(0);
+        setScore(0);
+        setSelectedOption(null);
+        setIsAnswered(false);
+        setShowFeedback(null);
+      };
+
+      const renderMenu = () => (
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gradient-to-br from-blue-50 to-indigo-100">
+          <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md text-center">
+            <div className="bg-indigo-600 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <i className="fas fa-book-open text-white text-4xl"></i>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">English Practice</h1>
+            <p className="text-gray-500 mb-8">i-Learn Smart Start Learning Hub</p>
+            
+            <div className="space-y-4">
+              {[3, 4, 5].map((grade) => (
+                <button
+                  key={grade}
+                  onClick={() => startQuiz(grade)}
+                  className="w-full group flex items-center justify-between p-5 bg-white border-2 border-indigo-50 hover:border-indigo-500 hover:bg-indigo-50 transition-all rounded-2xl"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="bg-indigo-100 p-3 rounded-xl text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                      <i className="fas fa-graduation-cap text-xl"></i>
+                    </div>
+                    <span className="text-xl font-semibold text-gray-700">Khối Lớp {grade}</span>
+                  </div>
+                  <i className="fas fa-chevron-right text-indigo-300 group-hover:text-indigo-600"></i>
+                </button>
+              ))}
+            </div>
+            
+            <div className="mt-8 flex items-center justify-center gap-2 text-sm text-gray-400">
+              <i className="fas fa-info-circle"></i>
+              <span>Luyện tập Unit 1 - 6 (HKI)</span>
+            </div>
+          </div>
+        </div>
+      );
+
+      const renderQuiz = () => {
+        const q = questions[currentIndex];
+        const progress = ((currentIndex + 1) / questions.length) * 100;
+
+        return (
+          <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+            <div className="max-w-3xl mx-auto">
+              {/* Header */}
+              <div className="flex items-center justify-between mb-6">
+                <button onClick={reset} className="p-3 hover:bg-gray-200 rounded-full transition-colors">
+                  <i className="fas fa-arrow-left text-xl text-gray-600"></i>
+                </button>
+                <div className="bg-white px-4 py-2 rounded-full shadow-sm border border-gray-100 flex items-center gap-2">
+                  <i className="fas fa-trophy text-lg text-yellow-500"></i>
+                  <span className="font-bold text-gray-700">{score}/{questions.length}</span>
+                </div>
+              </div>
+
+              {/* Progress */}
+              <div className="mb-8">
+                <div className="flex justify-between items-end mb-2">
+                  <span className="text-sm font-medium text-indigo-600 uppercase tracking-wider">Câu {currentIndex + 1} của {questions.length}</span>
+                  <span className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded-md font-bold">{q.level}</span>
+                </div>
+                <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-indigo-500 transition-all duration-500 ease-out"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Question Card */}
+              <div className="bg-white rounded-3xl shadow-xl p-8 mb-6 border border-gray-100 relative overflow-hidden">
+                 {/* Hint Background Icon */}
+                <div className="absolute top-4 right-4 text-6xl opacity-20 pointer-events-none">
+                  {q.hint}
+                </div>
+
+                <h2 className="text-2xl font-bold text-gray-800 mb-8 leading-relaxed pr-12">
+                  {q.q}
+                </h2>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {q.options.map((option, idx) => {
+                    let btnStyle = "border-gray-200 hover:border-indigo-300 hover:bg-indigo-50";
+                    let icon = null;
+
+                    if (isAnswered) {
+                      if (idx === q.ans) {
+                        btnStyle = "border-green-500 bg-green-50 text-green-700 ring-2 ring-green-200";
+                        icon = <i className="fas fa-check-circle text-xl"></i>;
+                      } else if (idx === selectedOption) {
+                        btnStyle = "border-red-500 bg-red-50 text-red-700 ring-2 ring-red-200";
+                        icon = <i className="fas fa-times-circle text-xl"></i>;
+                      } else {
+                        btnStyle = "opacity-50 border-gray-200";
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        disabled={isAnswered}
+                        onClick={() => handleAnswer(idx)}
+                        className={`flex items-center justify-between p-5 border-2 rounded-2xl text-left text-lg font-medium transition-all ${btnStyle}`}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold text-gray-500 uppercase">
+                            {String.fromCharCode(65 + idx)}
+                          </span>
+                          {option}
+                        </span>
+                        {icon}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Next Button / Feedback */}
+              {isAnswered && (
+                <div className={`p-6 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 transition-all duration-300 ${showFeedback === 'correct' ? 'bg-green-100' : 'bg-red-100'}`}>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 flex items-center justify-center rounded-full ${showFeedback === 'correct' ? 'bg-green-500' : 'bg-red-500'}`}>
+                       {showFeedback === 'correct' ? <i className="fas fa-check text-white text-xl"></i> : <i className="fas fa-times text-white text-xl"></i>}
+                    </div>
+                    <div>
+                      <p className={`font-bold text-lg ${showFeedback === 'correct' ? 'text-green-800' : 'text-red-800'}`}>
+                        {showFeedback === 'correct' ? 'Tuyệt vời! Chính xác rồi.' : 'Opps! Sai mất rồi.'}
+                      </p>
+                      {showFeedback === 'wrong' && (
+                        <p className="text-red-600 mt-1">Đáp án đúng là: <span className="font-bold">{q.options[q.ans]}</span></p>
+                      )}
+                    </div>
+                  </div>
+                  <button 
+                    onClick={nextQuestion}
+                    className={`w-full md:w-auto px-10 py-4 rounded-xl font-bold text-white shadow-lg transition-transform active:scale-95 ${showFeedback === 'correct' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'}`}
+                  >
+                    {currentIndex === questions.length - 1 ? 'Xem Kết Quả' : 'Câu Tiếp Theo'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      };
+
+      const renderResult = () => {
+        const percentage = Math.round((score / questions.length) * 100);
+        let message = "Cần cố gắng hơn nhé!";
+        let iconClass = "fas fa-times-circle";
+        let color = "text-red-500";
+
+        if (percentage >= 80) {
+          message = "Xuất sắc! Em là thiên tài.";
+          iconClass = "fas fa-trophy";
+          color = "text-yellow-500";
+        } else if (percentage >= 50) {
+          message = "Làm tốt lắm! Chúc mừng em.";
+          iconClass = "fas fa-check-circle";
+          color = "text-green-500";
+        }
+
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-indigo-600 text-white">
+            <div className="bg-white rounded-3xl p-10 w-full max-w-md text-center shadow-2xl">
+              <div className="mb-6 flex justify-center">
+                <div className={`w-24 h-24 rounded-full flex items-center justify-center bg-gray-50 border-4 border-indigo-100`}>
+                  <i className={`${iconClass} ${color} text-5xl`}></i>
+                </div>
+              </div>
+              <h2 className="text-gray-800 text-3xl font-bold mb-2">Hoàn Thành!</h2>
+              <p className="text-gray-500 mb-8">Khối {currentGrade} - Hạng mục ôn tập</p>
+              
+              <div className="flex justify-around mb-8">
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm uppercase font-bold mb-1">Điểm số</p>
+                  <p className="text-indigo-600 text-4xl font-black">{score}/{questions.length}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm uppercase font-bold mb-1">Tỷ lệ</p>
+                  <p className="text-indigo-600 text-4xl font-black">{percentage}%</p>
+                </div>
+              </div>
+
+              <div className={`p-4 rounded-2xl mb-8 bg-gray-50 border-2 border-dashed border-gray-200`}>
+                 <p className="text-indigo-600 font-bold italic">"{message}"</p>
+              </div>
+
+              <div className="space-y-3">
+                <button 
+                  onClick={() => startQuiz(currentGrade)}
+                  className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg transition-colors"
+                >
+                  Làm lại lần nữa
+                </button>
+                <button 
+                  onClick={reset}
+                  className="w-full py-4 bg-white border-2 border-indigo-100 text-indigo-600 hover:bg-indigo-50 rounded-xl font-bold transition-colors"
+                >
+                  Chọn khối khác
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="font-sans antialiased text-gray-900">
+          {view === 'menu' && renderMenu()}
+          {view === 'quiz' && renderQuiz()}
+          {view === 'result' && renderResult()}
+        </div>
+      );
+    };
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
