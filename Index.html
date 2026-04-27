@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronunciation Coach - Học Phát Âm Tiếng Anh</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Lexend', sans-serif;
+            background-color: #fdfbf7;
+        }
+
+        .header-bg {
+            background-color: #14b8a6; /* Teal color from image */
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-mode {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-mode:active {
+            transform: scale(0.95);
+        }
+
+        .active-tab {
+            background-color: white !important;
+            color: #14b8a6 !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes pulse-custom {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animate-game-pulse {
+            animation: pulse-custom 2s infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Header Section -->
+    <header class="header-bg p-8 pb-16 text-white text-center relative overflow-hidden">
+        <div class="max-w-3xl mx-auto relative z-10">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="bg-white p-2 rounded-xl text-teal-600 shadow-lg">
+                    <i class="fas fa-user-graduate text-3xl"></i>
+                </div>
+                <h1 class="text-4xl font-bold tracking-tight">Pronunciation Coach 🎨</h1>
+            </div>
+            
+            <div class="bg-teal-700/40 backdrop-blur-md rounded-2xl p-4 inline-block mb-8 border border-white/20">
+                <p class="font-semibold text-lg">Author: Thầy Phạm Ngọc Dũng</p>
+                <p class="text-teal-100 text-sm opacity-90">Trường Tiểu học Thăng Bình</p>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex flex-wrap justify-center gap-3">
+                <button onclick="switchMode('learn')" id="btn-learn" class="btn-mode px-6 py-2.5 rounded-xl font-bold border-2 border-white/30 hover:bg-white/10 flex items-center gap-2">
+                    <i class="fas fa-book-open"></i> LEARN MODE
+                </button>
+                <button onclick="switchMode('quiz')" id="btn-quiz" class="btn-mode px-6 py-2.5 rounded-xl font-bold border-2 border-white/30 hover:bg-white/10 flex items-center gap-2">
+                    <i class="fas fa-bullseye"></i> QUIZ MODE
+                </button>
+                <button onclick="switchMode('game')" id="btn-game" class="btn-mode px-6 py-2.5 rounded-xl font-bold border-2 border-amber-400 bg-amber-400/20 text-amber-100 hover:bg-amber-400/40 flex items-center gap-2 animate-game-pulse">
+                    <i class="fas fa-gamepad"></i> GAME MODE
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-4 -mt-8 mb-12">
+        <div class="glass-card rounded-3xl p-8 min-h-[400px] flex flex-col items-center justify-center relative">
+            
+            <!-- Information Bar (Points/Steps) -->
+            <div id="info-bar" class="w-full flex justify-between items-center mb-10 absolute top-6 px-8">
+                <div id="step-indicator" class="flex items-center gap-2 bg-gray-100 px-4 py-1.5 rounded-full text-xs font-bold text-gray-500">
+                    STEP <span id="current-step">1</span> / <span id="total-steps">10</span>
+                </div>
+                <div class="bg-amber-100 px-4 py-1.5 rounded-full text-xs font-bold text-amber-600 flex items-center gap-1">
+                    ⭐ <span id="total-points">0</span> Points
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div id="content-display" class="w-full text-center mt-8">
+                <!-- Content will be injected here by JS -->
+            </div>
+
+            <!-- Action Buttons for Answers -->
+            <div id="answer-options" class="flex flex-wrap justify-center gap-4 mt-12 w-full">
+                <!-- Buttons injected here -->
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-gray-100 h-2.5 rounded-full mt-12 overflow-hidden">
+                <div id="progress-line" class="bg-teal-500 h-full transition-all duration-500" style="width: 10%;"></div>
+            </div>
+
+            <!-- Heart / Life Icon -->
+            <div class="absolute bottom-4 right-8 text-pink-300">
+                <i class="fas fa-heart text-xl"></i>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Result -->
+    <div id="result-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+            <div id="result-icon" class="text-6xl mb-4">🎉</div>
+            <h2 id="result-title" class="text-2xl font-bold text-gray-800 mb-2">Tuyệt vời!</h2>
+            <p id="result-text" class="text-gray-600 mb-6">Bạn đã hoàn thành bài luyện tập xuất sắc.</p>
+            <button onclick="closeModal()" class="w-full bg-teal-500 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-teal-600 transition-colors">
+                LÀM LẠI
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Store
+        const vocabulary = [
+            { word: "cakes", sound: "/s/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "boxes", sound: "/iz/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "dogs", sound: "/z/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "cats", sound: "/s/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "watches", sound: "/iz/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "pens", sound: "/z/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "books", sound: "/s/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "buses", sound: "/iz/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "phones", sound: "/z/", choices: ["/s/", "/z/", "/iz/"] },
+            { word: "cups", sound: "/s/", choices: ["/s/", "/z/", "/iz/"] }
+        ];
+
+        let currentMode = 'learn';
+        let currentIndex = 0;
+        let points = 0;
+        let gameTimer = null;
+        let timeLeft = 30;
+
+        const contentDisplay = document.getElementById('content-display');
+        const answerOptions = document.getElementById('answer-options');
+        const currentStepEl = document.getElementById('current-step');
+        const totalStepsEl = document.getElementById('total-steps');
+        const totalPointsEl = document.getElementById('total-points');
+        const progressLine = document.getElementById('progress-line');
+
+        // Initialize App
+        window.onload = () => {
+            totalStepsEl.innerText = vocabulary.length;
+            switchMode('learn');
+        };
+
+        function switchMode(mode) {
+            currentMode = mode;
+            currentIndex = 0;
+            points = 0;
+            timeLeft = 30;
+            if(gameTimer) clearInterval(gameTimer);
+
+            // Update UI Tabs
+            document.querySelectorAll('.btn-mode').forEach(btn => btn.classList.remove('active-tab'));
+            document.getElementById(`btn-${mode}`).classList.add('active-tab');
+
+            renderScreen();
+        }
+
+        function renderScreen() {
+            const data = vocabulary[currentIndex];
+            totalPointsEl.innerText = points;
+            currentStepEl.innerText = currentIndex + 1;
+            progressLine.style.width = `${((currentIndex + 1) / vocabulary.length) * 100}%`;
+
+            if (currentMode === 'learn') {
+                renderLearn(data);
+            } else if (currentMode === 'quiz') {
+                renderQuiz(data);
+            } else if (currentMode === 'game') {
+                renderGame(data);
+            }
+        }
+
+        function renderLearn(data) {
+            contentDisplay.innerHTML = `
+                <h2 class="text-6xl font-bold text-teal-700 mb-6">${data.word}</h2>
+                <button onclick="speak('${data.word}')" class="bg-teal-50 text-teal-500 w-16 h-16 rounded-full text-2xl hover:bg-teal-100 transition-all shadow-sm">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+                <div class="mt-8 p-4 bg-teal-50 rounded-2xl inline-block border border-teal-100">
+                    <p class="text-teal-700 font-bold text-xl">Phát âm đúng: <span class="text-2xl ml-2">${data.sound}</span></p>
+                </div>
+            `;
+            
+            answerOptions.innerHTML = `
+                <button onclick="nextItem()" class="px-12 py-3 bg-teal-500 text-white rounded-2xl font-bold shadow-lg hover:bg-teal-600 transition-all">
+                    TIẾP THEO <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            `;
+        }
+
+        function renderQuiz(data) {
+            contentDisplay.innerHTML = `
+                <h2 class="text-6xl font-bold text-teal-700 mb-6">${data.word}</h2>
+                <button onclick="speak('${data.word}')" class="bg-teal-50 text-teal-500 w-16 h-16 rounded-full text-2xl hover:bg-teal-100 transition-all shadow-sm">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            `;
+
+            answerOptions.innerHTML = data.choices.map(choice => `
+                <button onclick="checkAnswer('${choice}')" class="choice-btn px-10 py-4 bg-white border-2 border-gray-100 rounded-2xl font-bold text-xl text-gray-700 shadow-sm hover:border-teal-400 hover:text-teal-600 transition-all">
+                    ${choice}
+                </button>
+            `).join('');
+        }
+
+        function renderGame(data) {
+            if (!gameTimer) startTimer();
+
+            contentDisplay.innerHTML = `
+                <div class="mb-4 text-amber-600 font-bold text-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-clock"></i> <span>Thời gian: ${timeLeft}s</span>
+                </div>
+                <h2 class="text-7xl font-black text-teal-700 mb-8 scale-in">${data.word}</h2>
+            `;
+
+            answerOptions.innerHTML = data.choices.map(choice => `
+                <button onclick="checkAnswer('${choice}')" class="px-8 py-4 bg-amber-50 border-2 border-amber-200 rounded-2xl font-bold text-2xl text-amber-700 shadow-sm hover:bg-amber-400 hover:text-white transition-all transform hover:-translate-y-1">
+                    ${choice}
+                </button>
+            `).join('');
+        }
+
+        function startTimer() {
+            timeLeft = 30;
+            gameTimer = setInterval(() => {
+                timeLeft--;
+                if(currentMode === 'game') {
+                    const timerEl = contentDisplay.querySelector('span');
+                    if(timerEl) timerEl.innerText = `Thời gian: ${timeLeft}s`;
+                }
+                
+                if (timeLeft <= 0) {
+                    clearInterval(gameTimer);
+                    showResult("Hết giờ!", "Bạn đã hết thời gian rồi. Thử lại nhé!", "⏰");
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(selected) {
+            const data = vocabulary[currentIndex];
+            const isCorrect = selected === data.sound;
+
+            if (isCorrect) {
+                points += (currentMode === 'game' ? 20 : 10);
+                if (currentMode === 'game') timeLeft += 2; // Bonus time in game
+                
+                // Visual feedback (temporary highlight)
+                event.target.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                
+                setTimeout(() => {
+                    nextItem();
+                }, 300);
+            } else {
+                if (currentMode === 'game') timeLeft -= 5; // Penalty in game
+                
+                event.target.classList.add('bg-red-500', 'text-white', 'border-red-500', 'animate-shake');
+                setTimeout(() => {
+                    event.target.classList.remove('bg-red-500', 'text-white', 'border-red-500', 'animate-shake');
+                }, 500);
+            }
+        }
+
+        function nextItem() {
+            if (currentIndex < vocabulary.length - 1) {
+                currentIndex++;
+                renderScreen();
+            } else {
+                if(gameTimer) clearInterval(gameTimer);
+                showResult("Hoàn thành!", `Bạn đạt được ${points} điểm!`, "🏆");
+            }
+        }
+
+        function speak(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.8;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function showResult(title, text, icon) {
+            document.getElementById('result-title').innerText = title;
+            document.getElementById('result-text').innerText = text;
+            document.getElementById('result-icon').innerText = icon;
+            document.getElementById('result-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('result-modal').style.display = 'none';
+            switchMode(currentMode);
+        }
+    </script>
+
+    <style>
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .animate-shake {
+            animation: shake 0.2s ease-in-out 0s 2;
+        }
+        .scale-in {
+            animation: scaleIn 0.3s ease-out forwards;
+        }
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</body>
+</html>
