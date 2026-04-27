@@ -1,0 +1,325 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { Volume2, BookOpen, Target, GraduationCap, Palette, Star, Heart, CheckCircle2, XCircle } from 'lucide-react';
+
+// Vocabulary data categorized by pronunciation
+const WORD_DATA = {
+  s: {
+    title: 'The /s/ Team',
+    colorText: 'text-rose-600',
+    colorBg: 'bg-rose-50',
+    words: ['cats', 'cups', 'books', 'bikes', 'hats', 'maps', 'tops', 'shops', 'cakes', 'cooks']
+  },
+  z: {
+    title: 'The /z/ Crew',
+    colorText: 'text-blue-600',
+    colorBg: 'bg-blue-50',
+    words: ['dogs', 'bags', 'pens', 'pencils', 'rulers', 'doors', 'windows', 'chairs', 'tables', 'pictures']
+  },
+  iz: {
+    title: 'The /iz/ Party',
+    colorText: 'text-orange-600',
+    colorBg: 'bg-orange-50',
+    words: ['buses', 'boxes', 'classes', 'dresses', 'glasses', 'watches', 'sandwiches', 'dishes', 'brushes', 'wishes']
+  }
+};
+
+// Web Speech API for pronunciation
+const playAudio = (text) => {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.9;
+    window.speechSynthesis.speak(utterance);
+  } else {
+    alert("Your browser does not support text-to-speech.");
+  }
+};
+
+export default function PronunciationApp() {
+  const [activeTab, setActiveTab] = useState('learn'); // 'learn' | 'quiz'
+
+  // Quiz state
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [quizStatus, setQuizStatus] = useState('idle'); // 'idle' | 'playing' | 'finished'
+  const [feedback, setFeedback] = useState(null); // 'correct' | 'wrong' | null
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+
+  // Initialize quiz questions
+  const generateQuiz = useCallback(() => {
+    let allWords = [];
+    Object.keys(WORD_DATA).forEach(type => {
+      WORD_DATA[type].words.forEach(word => {
+        allWords.push({ word, type });
+      });
+    });
+
+    // Fisher-Yates shuffle
+    for (let i = allWords.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [allWords[i], allWords[j]] = [allWords[j], allWords[i]];
+    }
+
+    // Take 15 random questions for one round
+    setQuizQuestions(allWords.slice(0, 15));
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setQuizStatus('playing');
+    setFeedback(null);
+    setSelectedAnswer(null);
+  }, []);
+
+  useEffect(() => {
+    if (activeTab === 'quiz' && quizStatus === 'idle') {
+      generateQuiz();
+    }
+  }, [activeTab, quizStatus, generateQuiz]);
+
+  const handleAnswer = (answerType) => {
+    if (feedback !== null) return;
+
+    setSelectedAnswer(answerType);
+    const isCorrect = answerType === quizQuestions[currentQuestionIndex].type;
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      setFeedback('correct');
+      playAudio(quizQuestions[currentQuestionIndex].word);
+    } else {
+      setFeedback('wrong');
+    }
+
+    // Wait 1.5s before moving to the next question
+    setTimeout(() => {
+      if (currentQuestionIndex < quizQuestions.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+        setFeedback(null);
+        setSelectedAnswer(null);
+      } else {
+        setQuizStatus('finished');
+      }
+    }, 1500);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#fdfaf5] font-sans flex flex-col items-center">
+      
+      {/* Top Hero Section - Full width, ~1/3 height */}
+      <div className="w-full min-h-[33vh] bg-teal-600 rounded-b-[40px] shadow-lg flex flex-col items-center justify-center pt-10 pb-12 px-4 relative overflow-hidden">
+        {/* Background Pattern for aesthetics */}
+        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
+           <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full mix-blend-overlay blur-2xl"></div>
+           <div className="absolute bottom-10 right-10 w-48 h-48 bg-teal-300 rounded-full mix-blend-overlay blur-3xl"></div>
+        </div>
+
+        {/* Title */}
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-6 z-10 w-full max-w-5xl justify-center">
+          <div className="bg-white p-3 rounded-2xl text-teal-600 shadow-md transform -rotate-6">
+            <GraduationCap size={40} className="w-10 h-10 md:w-12 md:h-12" />
+          </div>
+          <h1 className="text-white text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-center drop-shadow-md">
+            Pronunciation Coach <span className="inline-block animate-bounce ml-2">🎨</span>
+          </h1>
+        </div>
+
+        {/* Prominent Author Info */}
+        <div className="bg-teal-800/40 backdrop-blur-sm border border-teal-500/50 rounded-2xl px-6 py-4 mb-10 z-10 w-full max-w-3xl text-center shadow-inner">
+          <p className="text-teal-50 text-lg md:text-2xl font-bold tracking-wide">
+            Author: Thầy Phạm Ngọc Dũng
+          </p>
+          <p className="text-teal-200 text-sm md:text-lg font-medium mt-1">
+            Trường Tiểu học Thăng Bình
+          </p>
+        </div>
+
+        {/* Full-width Tabs Container */}
+        <div className="bg-teal-800/50 p-2 rounded-2xl flex flex-col sm:flex-row items-center gap-2 w-full max-w-3xl z-10 backdrop-blur-md border border-teal-500/30 shadow-xl">
+          <button
+            onClick={() => { setActiveTab('learn'); setQuizStatus('idle'); }}
+            className={`flex-1 w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-black transition-all text-lg md:text-xl ${
+              activeTab === 'learn' 
+                ? 'bg-white text-teal-700 shadow-lg scale-[1.02]' 
+                : 'text-teal-100 hover:bg-teal-700/50 hover:text-white'
+            }`}
+          >
+            <BookOpen size={24} className={activeTab === 'learn' ? 'text-yellow-500' : 'text-teal-300'} />
+            LEARN MODE
+          </button>
+          <button
+            onClick={() => setActiveTab('quiz')}
+            className={`flex-1 w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl font-black transition-all text-lg md:text-xl ${
+              activeTab === 'quiz' 
+                ? 'bg-white text-teal-700 shadow-lg scale-[1.02]' 
+                : 'text-teal-100 hover:bg-teal-700/50 hover:text-white'
+            }`}
+          >
+            <Target size={24} className={activeTab === 'quiz' ? 'text-red-500' : 'text-teal-300'} />
+            QUIZ MODE
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="w-full max-w-5xl flex-1 flex flex-col px-4 py-10 md:py-12">
+        
+        {/* --- LEARN MODE --- */}
+        {activeTab === 'learn' && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 w-full max-w-lg lg:max-w-none mx-auto">
+            <h2 className="text-center text-xl sm:text-2xl md:text-3xl font-extrabold text-[#2d3748] mb-6 md:mb-8">
+              <span className="text-teal-500">🎵</span> Word Playground <span className="text-teal-500">🎵</span>
+            </h2>
+            
+            <div className="flex flex-col lg:grid lg:grid-cols-3 gap-6 md:gap-8">
+              {Object.entries(WORD_DATA).map(([key, data]) => (
+                <div key={key} className="bg-white rounded-3xl p-5 md:p-6 shadow-sm border border-gray-100 relative overflow-hidden">
+                  {/* Decorative background shape */}
+                  <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-20 ${data.colorBg}`}></div>
+                  
+                  <h3 className="text-lg md:text-xl font-bold text-slate-800 mb-5 relative z-10 border-b pb-3">
+                    {data.title}
+                  </h3>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3 relative z-10">
+                    {data.words.map((word) => (
+                      <button
+                        key={word}
+                        onClick={() => playAudio(word)}
+                        className={`flex items-center justify-between px-3 md:px-4 py-3 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all bg-white group active:scale-95`}
+                      >
+                        <span className={`font-bold text-sm md:text-base ${data.colorText}`}>
+                          {word}
+                        </span>
+                        <Volume2 
+                          size={18} 
+                          className="text-gray-300 group-hover:text-teal-600 transition-colors shrink-0 ml-2" 
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* --- QUIZ MODE --- */}
+        {activeTab === 'quiz' && (
+          <div className="flex justify-center items-center py-2 animate-in fade-in zoom-in-95 duration-300 w-full">
+            {quizStatus === 'playing' && quizQuestions.length > 0 && (
+              <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-5 sm:p-8 md:p-10 w-full max-w-2xl relative border-2 border-teal-50 overflow-hidden">
+                
+                {/* Decorative Elements */}
+                <Star className="absolute top-4 left-4 md:top-6 md:left-6 text-yellow-200 fill-yellow-200 w-6 h-6 md:w-8 md:h-8" />
+                <Heart className="absolute bottom-4 right-4 md:bottom-6 md:right-6 text-pink-200 fill-pink-200 w-6 h-6 md:w-8 md:h-8" />
+
+                {/* Progress Bar & Score */}
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 md:mb-10 z-10 relative">
+                  <div className="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <span className="whitespace-nowrap">Step {currentQuestionIndex + 1} / {quizQuestions.length}</span>
+                    <div className="w-20 md:w-24 h-2 bg-gray-200 rounded-full overflow-hidden ml-1">
+                      <div 
+                        className="h-full bg-teal-600 transition-all duration-300" 
+                        style={{ width: `${((currentQuestionIndex + 1) / quizQuestions.length) * 100}%`}}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="bg-yellow-100 text-yellow-700 px-5 py-2 rounded-full text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                    <Star size={16} className="fill-yellow-500 text-yellow-500" /> {score} Points
+                  </div>
+                </div>
+
+                {/* Question Word */}
+                <div className="flex flex-col items-center justify-center py-6 md:py-10 z-10 relative">
+                  <h2 className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-teal-600 mb-6 md:mb-8 tracking-tight drop-shadow-sm text-center break-words w-full">
+                    {quizQuestions[currentQuestionIndex].word}
+                  </h2>
+                  <button 
+                    onClick={() => playAudio(quizQuestions[currentQuestionIndex].word)}
+                    className="bg-teal-50 p-4 rounded-full text-teal-600 hover:bg-teal-600 hover:text-white transition-colors shadow-sm mb-10 active:scale-95"
+                    title="Listen to pronunciation"
+                  >
+                    <Volume2 size={28} />
+                  </button>
+
+                  {/* Answer Options - UI Dọc cho Mobile */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 md:gap-6 w-full max-w-[280px] sm:max-w-none justify-center">
+                    {['s', 'z', 'iz'].map((type) => {
+                      const isSelected = selectedAnswer === type;
+                      const isCorrectAnswer = quizQuestions[currentQuestionIndex].type === type;
+                      
+                      let btnStateClass = "bg-white border-2 border-gray-100 text-slate-700 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-700";
+                      
+                      if (feedback !== null) {
+                        if (type === selectedAnswer) {
+                          btnStateClass = feedback === 'correct' 
+                            ? "bg-green-100 border-green-500 text-green-700 scale-[1.02] sm:scale-105" 
+                            : "bg-red-100 border-red-500 text-red-700 scale-[0.98] sm:scale-95";
+                        } else if (isCorrectAnswer) {
+                          // Highlight correct answer if user guessed wrong
+                          btnStateClass = "bg-green-50 border-green-300 text-green-600 border-dashed";
+                        } else {
+                          btnStateClass = "bg-gray-50 border-gray-100 text-gray-400 opacity-50";
+                        }
+                      }
+
+                      return (
+                        <button
+                          key={type}
+                          onClick={() => handleAnswer(type)}
+                          disabled={feedback !== null}
+                          className={`w-full sm:flex-1 sm:max-w-[140px] py-4 rounded-2xl font-black text-xl md:text-2xl transition-all duration-200 shadow-sm active:scale-95 ${btnStateClass}`}
+                        >
+                          /{type}/
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Feedback Message */}
+                  <div className="h-10 mt-6 flex items-center justify-center">
+                    {feedback === 'correct' && (
+                      <div className="flex items-center gap-2 text-green-500 font-bold animate-bounce text-sm sm:text-base">
+                        <CheckCircle2 size={20} /> Correct!
+                      </div>
+                    )}
+                    {feedback === 'wrong' && (
+                      <div className="flex items-center gap-2 text-red-500 font-bold animate-pulse text-sm sm:text-base">
+                        <XCircle size={20} /> Oops, incorrect!
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              </div>
+            )}
+
+            {quizStatus === 'finished' && (
+              <div className="bg-white rounded-3xl shadow-xl p-8 md:p-10 w-full max-w-[90%] sm:max-w-md text-center border-2 border-teal-50 animate-in zoom-in mx-auto">
+                <div className="w-20 h-20 md:w-24 md:h-24 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Star className="text-yellow-500 fill-yellow-500 w-10 h-10 md:w-12 md:h-12" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-800 mb-2">Awesome!</h2>
+                <p className="text-sm md:text-base text-gray-500 mb-6 md:mb-8">
+                  You have completed the practice.
+                </p>
+                <div className="text-4xl md:text-5xl font-black text-teal-600 mb-8">
+                  {score} / {quizQuestions.length}
+                </div>
+                <button
+                  onClick={generateQuiz}
+                  className="w-full py-4 bg-teal-600 text-white rounded-2xl font-bold text-base md:text-lg hover:bg-teal-700 transition-colors shadow-lg shadow-teal-200 active:scale-95"
+                >
+                  Play Again!
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>
+
+    </div>
+  );
+}
